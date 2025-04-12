@@ -13,10 +13,35 @@ def construye_adyacencia(D,m):
     np.fill_diagonal(A,0) # Borramos diagonal para eliminar autolinks
     return(A)
 
-def calculaLU(matriz):
+def calculaLU(A):
     # matriz es una matriz de NxN
     # Retorna la factorización LU a través de una lista con dos matrices L y U de NxN.
     # Completar! Have fun
+    
+    # inicializo L como la identidad y U como la matriz original
+    L = np.identity(A.shape[0])
+    U = A.copy()
+
+
+    for i in range(A.shape[0]):
+        # si el pivot actual es 0, intercambio filas con alguna que no lo sea
+        if U[i,i] == 0:
+            for j in range(i+1,A.shape[0]):
+                if U[j,i] != 0:
+                    U[[i,j]] = U[[j,i]]
+                    L[[i,j]] = L[[j,i]]
+                    break
+
+        # Genero ceros por debajo de A[i][i]
+        for j in range(i+1,A.shape[0]):
+            # En L[j][i] guardo el coeficiente por el que multiplico la fila i para obtener la fila j
+            coeficiente = U[j,i]/U[i,i]
+            L[j,i] = coeficiente
+
+            # Genero ceros por debajo de A[i][i]
+            # A la fila j le resto la fila i multiplicada por el coeficiente
+            U[j,:] = U[j,:] - coeficiente*U[i,:]
+    return L,U
 
 def calcula_matriz_C(A): 
     # Función para calcular la matriz de trancisiones C
@@ -61,4 +86,17 @@ def calcula_B(C,cantidad_de_visitas):
     B = np.eye(C.shape[0])
     for i in range(cantidad_de_visitas-1):
         # Sumamos las matrices de transición para cada cantidad de pasos
+        pass
     return B
+
+
+if __name__ == "__main__":
+    # Test de la función calculaLU
+    for _ in range(10):
+        n = np.random.randint(2, 10)
+        A = np.random.rand(n, n)
+        L, U = calculaLU(A)
+        assert np.allclose(A, L@U)
+
+    print("SUCCESS!")
+
