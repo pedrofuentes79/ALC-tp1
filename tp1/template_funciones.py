@@ -25,9 +25,9 @@ def calculaLU(A):
 
     for i in range(A.shape[0]):
         # si el pivot actual es 0, intercambio filas con alguna que no lo sea
-        if U[i,i] == 0:
+        if np.isclose(U[i,i], 0):
             for j in range(i+1,A.shape[0]):
-                if U[j,i] != 0:
+                if not np.isclose(U[j,i], 0):
                     U[[i,j]] = U[[j,i]]
                     L[[i,j]] = L[[j,i]]
                     break
@@ -98,5 +98,17 @@ if __name__ == "__main__":
         L, U = calculaLU(A)
         assert np.allclose(A, L@U)
 
-    print("SUCCESS!")
+
+    # Test de calculaLU con una matriz que fuerce a cambiar el pivot
+    #     
+    # ESTE TEST FALLA.
+    A = np.array([[1,1,3],[1,1,6],[7,8,9]])
+    L, U = calculaLU(A)
+    print(np.allclose(A,L@U))
+
+
+    # ESTE TEST ANDA (si manualmente cambiamos las filas de orden)
+    A = np.array([[1,1,3],[7,8,9],[1,1,6]])
+    L, U = calculaLU(A)
+    print(np.allclose(A,L@U))
 
