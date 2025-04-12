@@ -26,12 +26,11 @@ def calculaLU(A):
     # la que voy a triangular y me van a quedar 0s por debajo de la diagonal
     U = A.copy()
 
-    
     for i in range(n):
-        # TODO: FIX
-        # si el pivot actual es 0, intercambio filas con alguna que no lo sea
-        if np.isclose(U[i,i], 0):
-            for j in range(i+1,n):
+        # si el pivot actual es 0, busco la primera fila con valor distinto de 0
+        pivot = U[i,i]
+        if np.isclose(pivot, 0):
+            for j in range(i+1, n):
                 if not np.isclose(U[j,i], 0):
                     U[[i,j]] = U[[j,i]]
                     L[[i,j]] = L[[j,i]]
@@ -40,7 +39,7 @@ def calculaLU(A):
         # Genero ceros por debajo de A[i][i]
         for j in range(i+1,n):
             # En L[j][i] guardo el coeficiente por el que multiplico la fila i para obtener la fila j
-            coeficiente = U[j,i]/U[i,i]
+            coeficiente = U[j,i]/pivot
             L[j,i] = coeficiente
 
             # Genero ceros por debajo de A[i][i]
@@ -52,8 +51,16 @@ def calcula_matriz_C(A):
     # Función para calcular la matriz de trancisiones C
     # A: Matriz de adyacencia
     # Retorna la matriz C
-    Kinv = ... # Calcula inversa de la matriz K, que tiene en su diagonal la suma por filas de A
-    C = ... # Calcula C multiplicando Kinv y A
+    
+    # extraigo un arreglo con las sumas de cada fila de A
+    suma_filas_A = np.sum(A, axis=1)
+
+    # armo la matriz diagonal K con los valores de sumas_filas_A
+    K = np.diag(suma_filas_A)
+    Kinv = np.linalg.inv(K)
+    
+    # calculo C como A^T * K^-1
+    C = A.T @ Kinv
     return C
 
     
