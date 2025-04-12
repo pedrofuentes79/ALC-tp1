@@ -18,22 +18,27 @@ def calculaLU(A):
     # Retorna la factorización LU a través de una lista con dos matrices L y U de NxN.
     # Completar! Have fun
     
-    # inicializo L como la identidad y U como la matriz original
-    L = np.identity(A.shape[0])
+    n = A.shape[0]
+    # inicializo L como la identidad. 
+    # Aca me voy a guardar los coeficientes para triangular la matriz U
+    L = np.identity(n)
+    # inicializo U como la matriz original, 
+    # la que voy a triangular y me van a quedar 0s por debajo de la diagonal
     U = A.copy()
 
-
-    for i in range(A.shape[0]):
+    
+    for i in range(n):
+        # TODO: FIX
         # si el pivot actual es 0, intercambio filas con alguna que no lo sea
         if np.isclose(U[i,i], 0):
-            for j in range(i+1,A.shape[0]):
+            for j in range(i+1,n):
                 if not np.isclose(U[j,i], 0):
                     U[[i,j]] = U[[j,i]]
                     L[[i,j]] = L[[j,i]]
                     break
 
         # Genero ceros por debajo de A[i][i]
-        for j in range(i+1,A.shape[0]):
+        for j in range(i+1,n):
             # En L[j][i] guardo el coeficiente por el que multiplico la fila i para obtener la fila j
             coeficiente = U[j,i]/U[i,i]
             L[j,i] = coeficiente
@@ -111,4 +116,5 @@ if __name__ == "__main__":
     A = np.array([[1,1,3],[7,8,9],[1,1,6]])
     L, U = calculaLU(A)
     print(np.allclose(A,L@U))
+    
 
