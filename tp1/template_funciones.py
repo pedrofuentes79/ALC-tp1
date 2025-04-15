@@ -29,12 +29,6 @@ def calculaLU(A):
     for i in range(n):
         # si el pivot actual es 0, busco la primera fila con valor distinto de 0
         pivot = U[i,i]
-        if np.isclose(pivot, 0):
-            for j in range(i+1, n):
-                if not np.isclose(U[j,i], 0):
-                    U[[i,j]] = U[[j,i]]
-                    L[[i,j]] = L[[j,i]]
-                    break
 
         # Genero ceros por debajo de A[i][i]
         for j in range(i+1,n):
@@ -67,16 +61,13 @@ def calcula_matriz_C(A):
 def calcula_pagerank(A,alfa):
     # Función para calcular PageRank usando LU
     # A: Matriz de adyacencia
-    # d: coeficientes de damping
+    # alpha: coeficientes de damping
     # Retorna: Un vector p con los coeficientes de page rank de cada museo
     C = calcula_matriz_C(A)
     N = A.shape[0] 
     M = (N/alfa) * (np.identity(N) - (1-alfa)*C)
     L, U = calculaLU(M) # Calculamos descomposición LU a partir de C y d
-    
-    # TODO: que es el coeficiente con d???
-    b = np.ones(N) # Vector de 1s, multiplicado por el coeficiente correspondiente usando d y N.
-
+    b = np.ones(N) 
     Up = scipy.linalg.solve_triangular(L,b,lower=True) # Primera inversión usando L
     p = scipy.linalg.solve_triangular(U,Up) # Segunda inversión usando U
     return p
