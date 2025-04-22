@@ -1,5 +1,3 @@
-
-
 [2] Qué definicion de C asumimos para la demostracion? (asumimos c_ii = 0, la de f(d_ij))?
 [4] Formalismo en el 4 (demostracion?)
 [6] El error  que te dan es el || w - \hat{w} || o el relativo || w - \hat{w} || / || w ||  
