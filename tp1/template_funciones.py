@@ -82,21 +82,20 @@ def calcula_pagerank(A,alfa):
     return p
 
 def calcula_matriz_C_continua(D):
-    N = D.shape[0]
     D_copia = D.astype(float, copy=True)
     np.fill_diagonal(D_copia, 1.0)
 
     with np.errstate(divide='ignore'): # Ignorar warnings de división por cero si ocurren
-        inv_D = 1.0 / D_copia
-
+        A = 1.0 / D_copia
     # devuelvo la diagonal a 0s, ya que la distancia de un museo a sí mismo es 0
-    np.fill_diagonal(inv_D, 0.0)
+    np.fill_diagonal(A, 0.0)
 
-    # Calcular la suma de las inversas para cada fila
-    row_sums = np.sum(inv_D, axis=1)
+    # Calcular la suma de las inversas para cada columna
+    column_sums = np.sum(A, axis=1)
 
-    # Calcular C: C[i, j] = inv_D[i, j] / row_sums[i]
-    C = inv_D / row_sums
+    K = np.diag(column_sums)
+    Kinv = np.linalg.inv(K)
+    C = A.T @ Kinv
     return C
 
 def calcula_B(C, cantidad_de_visitas):
