@@ -89,8 +89,11 @@ def calcula_matriz_C_continua(D):
     with np.errstate(divide='ignore'): # Ignorar warnings de división por cero si ocurren
         inv_D = 1.0 / D_copia
 
-    # Calcular la suma de las inversas para cada fila 
-    row_sums = np.sum(inv_D, axis=1) 
+    # devuelvo la diagonal a 0s, ya que la distancia de un museo a sí mismo es 0
+    np.fill_diagonal(inv_D, 0.0)
+
+    # Calcular la suma de las inversas para cada fila
+    row_sums = np.sum(inv_D, axis=1)
 
     # Calcular C: C[i, j] = inv_D[i, j] / row_sums[i]
     C = inv_D / row_sums
