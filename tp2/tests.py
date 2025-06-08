@@ -4,6 +4,7 @@ from linalg import (
     calculaLU,
     metpotI2,
     laplaciano_iterativo,
+    modularidad_iterativo,
 )
 import numpy as np
 
@@ -56,12 +57,9 @@ def test_met_pot_I2():
     assert np.isclose(np.abs(np.dot(eigenvectors.T[1], _eigenvector)), 1)
     assert(np.allclose(eigenvalues[1], _eigenvalue))
 
-def test_laplaciano_iterativo():
-    """
-    Test para la función laplaciano_iterativo.
-    """
-    # Este es el grafo de la figura 1 del enunciado
-    A = np.array([
+
+# Este es el grafo de la figura 1 del enunciado
+grafo_figura_1 = np.array([
         [0, 1, 1, 1, 0, 0, 0, 0],
         [1, 0, 1, 1, 0, 0, 0, 0],
         [1, 1, 0, 1, 0, 0, 0, 0],
@@ -71,6 +69,12 @@ def test_laplaciano_iterativo():
         [0, 0, 0, 0, 1, 1, 0, 1],
         [0, 0, 0, 0, 1, 1, 1, 0]
     ])
+
+def test_laplaciano_iterativo():
+    """
+    Test para la función laplaciano_iterativo.
+    """
+    A = grafo_figura_1
     niveles = 2 # entonces son 4 comunidades
     particiones = laplaciano_iterativo(A, niveles)
     assert(len(particiones) <= 2**niveles)
@@ -79,6 +83,15 @@ def test_laplaciano_iterativo():
     for i, comunidad in enumerate(particiones):
         print(f"Comunidad {i}: {comunidad}")
 
+def test_modularidad_iterativo():
+    """
+    Test para la función modularidad_iterativo.
+    """
+    A = grafo_figura_1
+    comunidades = modularidad_iterativo(A)
+    print(comunidades)
+
+
 if __name__ == "__main__":
     np.random.seed(99)
 
@@ -86,4 +99,5 @@ if __name__ == "__main__":
     test_inversa_con_lu()
     test_met_pot_I2()
     test_laplaciano_iterativo()
+    test_modularidad_iterativo()
     print("Test passed successfully.")

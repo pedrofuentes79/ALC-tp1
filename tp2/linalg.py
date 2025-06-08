@@ -18,7 +18,7 @@ def calcula_L(A:np.ndarray) -> np.ndarray:
     return L
 
 
-def construye_matriz_P(A:np.ndarray) -> np.ndarray:
+def calcula_P(A:np.ndarray) -> np.ndarray:
     """
     Construye la matriz P que cumple:
     Pij = k_i * k_j /2E   
@@ -34,7 +34,7 @@ def calcula_R(A:np.ndarray) -> np.ndarray:
     Calcula la matríz R, a partir de la matriz A, que es una matriz de adyacencia.
     """    
     A = simetrizar_A(A)
-    P = construye_matriz_P(A)
+    P = calcula_P(A)
     R = A - P
     return R
 
@@ -53,7 +53,7 @@ def calcula_lambda(L,v):
     return _lambda
 
 
-def calcula_Q(R,v):
+def calcula_Q(R,v, n_aristas):
     """
     Calcula la cantidad de conexiones entre los dos grupos.
     Usamos la fórmula:
@@ -64,8 +64,7 @@ def calcula_Q(R,v):
     - E: número de conexiones totales
     """
     s = np.sign(v)  # <-- S_i = signo(v_i)
-    E = np.sum(R) / 2  # <-- número de conexiones totales
-    Q = 1/4/E * s.T @ R @ s 
+    Q = 1/(4*n_aristas) * s.T @ R @ s 
     return Q    
 
 
@@ -197,5 +196,8 @@ def laplaciano_iterativo(A: np.ndarray, niveles: int) -> list:
     return particionar(indices_iniciales, niveles)
 
 
-    
-    
+def modularidad_iterativo(A: np.ndarray) -> List[List[int]]:
+    """
+    Calcula la modularidad de una red
+    """
+    return None
