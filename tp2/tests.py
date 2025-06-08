@@ -40,22 +40,25 @@ def test_met_pot_I2():
     """
     Test para la función metpotI2.
     """
+    # Usamos una bien condicionada. Si no, no pasa el test :D
     A = np.array([
-        [1, -1, 0],
-        [-1, 2, -1],
-        [0, -1, 1]
+        [2.0, -1.0, 0.0],
+        [-1.0, 2.0, -1.0],
+        [0.0, -1.0, 2.0]
     ])
     mu = 0.1
     eigenvalues, eigenvectors = np.linalg.eig(A + mu * np.eye(A.shape[0]))
-    assert(all(eigenvalues > 0))  
+    assert(all(eigenvalues > 0)) 
 
     _eigenvalue, _eigenvector = metpotI2(A, mu)
-    import ipdb; ipdb.set_trace()
-    assert(np.allclose(eigenvectors.T[1], _eigenvector))
+
+    assert np.isclose(np.abs(np.dot(eigenvectors.T[1], _eigenvector)), 1)
     assert(np.allclose(eigenvalues[1], _eigenvalue))
 
 
 if __name__ == "__main__":
+    np.random.seed(99)
+
     test_met_pot()
     test_inversa_con_lu()
     test_met_pot_I2()

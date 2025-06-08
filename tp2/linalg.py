@@ -139,7 +139,7 @@ def metpotI2(M:np.ndarray, mu:float) -> tuple:
     M2_inv = calcula_inversa_con_LU(*calculaLU(M2))
     M_inv_deflacionada = deflaciona(M2_inv)  
     
-    # Aplicamos el método de la potencia a la matríz deflacionada
+    # Aplicamos el método de la potencia a la matriz deflacionada
     autovalor, autovector = metpot(M_inv_deflacionada)
 
-    return autovalor, autovector
+    return 1/autovalor, autovector
