@@ -1,0 +1,62 @@
+from linalg import (
+    metpot, 
+    calcula_inversa_con_LU,
+    calculaLU,
+    metpotI2,
+)
+import numpy as np
+
+
+def test_met_pot():
+    """
+    Test para la función metpot.
+    """
+    A = np.array([
+        [1,2,3],
+        [2,1,4],
+        [3,4,1]
+    ])   
+    eigenvalues, eigenvectors = np.linalg.eig(A)
+    _eigenvalue, _eigenvector = metpot(A)
+    assert(np.allclose(eigenvectors.T[0], _eigenvector))
+    assert(np.allclose(eigenvalues[0], _eigenvalue))
+
+
+def test_inversa_con_lu():
+    """
+    Test para la función que calcula la inversa de una matriz usando LU.
+    """
+    A = np.array([
+        [1, 2, 3],
+        [0, 1, 4],
+        [5, 6, 0]
+    ])
+    A_inv_np = np.linalg.inv(A)
+    A_inv_lu = calcula_inversa_con_LU(*calculaLU(A))
+    assert(np.allclose(A_inv_np, A_inv_lu))
+
+
+def test_met_pot_I2():
+    """
+    Test para la función metpotI2.
+    """
+    A = np.array([
+        [1, -1, 0],
+        [-1, 2, -1],
+        [0, -1, 1]
+    ])
+    mu = 0.1
+    eigenvalues, eigenvectors = np.linalg.eig(A + mu * np.eye(A.shape[0]))
+    assert(all(eigenvalues > 0))  
+
+    _eigenvalue, _eigenvector = metpotI2(A, mu)
+    import ipdb; ipdb.set_trace()
+    assert(np.allclose(eigenvectors.T[1], _eigenvector))
+    assert(np.allclose(eigenvalues[1], _eigenvalue))
+
+
+if __name__ == "__main__":
+    test_met_pot()
+    test_inversa_con_lu()
+    test_met_pot_I2()
+    print("Test passed successfully.")
