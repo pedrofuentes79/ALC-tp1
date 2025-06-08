@@ -2,6 +2,7 @@ import numpy as np
 from scipy.linalg import solve_triangular
 from template_funciones import construye_matriz_K
 from template_funciones import calculaLU
+from typing import List
 
 
 simetrizar_A = lambda A: (A + A.T) // 2 
@@ -143,3 +144,59 @@ def metpotI2(M:np.ndarray, mu:float) -> tuple:
     autovalor, autovector = metpot(M_inv_deflacionada)
 
     return 1/autovalor, autovector
+
+def laplaciano_iterativo(A: np.ndarray, niveles: int) -> list:
+    """
+    Calcula las particiones de una red de forma recursiva usando bisección espectral.
+    (Enunciado: "partir la red en dos grupos, y luego repetir el algoritmo en cada
+    uno de los subgrupos encontrados.")
+
+    Con niveles=k, se obtienen 2^k particiones.
+    """
+    
+    def particionar(indices_nodos: np.ndarray, nivel_restante: int) -> List[List[int]]:
+        """
+        Función interna y recursiva que realiza la partición.
+        """
+        # CASO BASE
+        ## Ya llegamos al k-esimo nivel, o la comunidad es trivial.
+        if nivel_restante == 0 or len(indices_nodos) <= 1:
+            return [list(indices_nodos)] if len(indices_nodos) > 0 else []
+
+        # PASO RECURSIVO
+        # 1. Crear el subgrafo para la comunidad actual.
+        ## Usamos np.ix_ para armar el subgrafo que solo tiene esos nodos.
+        sub_A = A[np.ix_(indices_nodos, indices_nodos)]
+        if sub_A.shape[0] < 2: return [list(indices_nodos)]
+        
+        # 2. Partir la red en dos grupos usando el Laplaciano.
+        ## Calculamos el v2, el 2do autovector mas chico de L
+        sub_L = calcula_L(sub_A)
+        _, v2 = metpotI2(sub_L, 1e-9) # si pasamos mu=0, la matriz podria ser singular! Asi los autovalores son todos != 0
+
+
+        ## Dividimos los nodos del subgrafo en dos comunidades.
+        ## np.where nos devuelve los indices dentro de v2 donde es positivo o negativo.
+        indices_subgrafo_com1 = np.where(v2 > 0)[0]
+        indices_subgrafo_com2 = np.where(v2 <= 0)[0]
+        
+        ## Mapeamos los indices locales del subgrafo de vuelta a los indices originales.
+        ## Al pasar indices_nodos[indices_subgrafo_com1] estamos devolviendo los indices
+        ## de los nodos que pertenecen a la comunidad 1, y lo mismo para 2.
+        comunidad1 = indices_nodos[indices_subgrafo_com1]
+        comunidad2 = indices_nodos[indices_subgrafo_com2]
+        
+        # Si una comunidad quedó vacía, devolvemos la comunidad como está
+        if len(comunidad1) == 0 or len(comunidad2) == 0:
+            return [list(indices_nodos)]
+
+        return particionar(comunidad1, nivel_restante - 1) + \
+               particionar(comunidad2, nivel_restante - 1)
+
+    # Primera llamada, le pasamos los indices de todos los nodos del grafo.
+    indices_iniciales = np.arange(A.shape[0])
+    return particionar(indices_iniciales, niveles)
+
+
+    
+    

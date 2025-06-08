@@ -3,6 +3,7 @@ from linalg import (
     calcula_inversa_con_LU,
     calculaLU,
     metpotI2,
+    laplaciano_iterativo,
 )
 import numpy as np
 
@@ -55,6 +56,20 @@ def test_met_pot_I2():
     assert np.isclose(np.abs(np.dot(eigenvectors.T[1], _eigenvector)), 1)
     assert(np.allclose(eigenvalues[1], _eigenvalue))
 
+def test_laplaciano_iterativo():
+    """
+    Test para la función laplaciano_iterativo.
+    """
+    A = np.array([
+        [0, 0, 1, 1],
+        [0, 0, 1, 1],
+        [1, 1, 0, 1],
+        [1, 1, 1, 0]
+    ])
+    niveles = 2
+    particiones = laplaciano_iterativo(A, niveles)
+    assert(len(particiones) == 2**niveles)
+    assert(all(len(comunidad) > 0 for comunidad in particiones))
 
 if __name__ == "__main__":
     np.random.seed(99)
@@ -62,4 +77,5 @@ if __name__ == "__main__":
     test_met_pot()
     test_inversa_con_lu()
     test_met_pot_I2()
+    test_laplaciano_iterativo()
     print("Test passed successfully.")
