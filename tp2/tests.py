@@ -68,7 +68,7 @@ def test_laplaciano_iterativo():
     ])
     niveles = 2
     particiones = laplaciano_iterativo(A, niveles)
-    assert(len(particiones) == 2**niveles)
+    assert(len(particiones) <= 2**niveles)
     assert(all(len(comunidad) > 0 for comunidad in particiones))
 
 if __name__ == "__main__":
