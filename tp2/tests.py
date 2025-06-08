@@ -60,16 +60,24 @@ def test_laplaciano_iterativo():
     """
     Test para la función laplaciano_iterativo.
     """
+    # Este es el grafo de la figura 1 del enunciado
     A = np.array([
-        [0, 0, 1, 1],
-        [0, 0, 1, 1],
-        [1, 1, 0, 1],
-        [1, 1, 1, 0]
+        [0, 1, 1, 1, 0, 0, 0, 0],
+        [1, 0, 1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 1, 0, 0, 0, 0],
+        [1, 1, 1, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 1, 1, 1],
+        [0, 0, 0, 0, 1, 0, 1, 1],
+        [0, 0, 0, 0, 1, 1, 0, 1],
+        [0, 0, 0, 0, 1, 1, 1, 0]
     ])
-    niveles = 2
+    niveles = 2 # entonces son 4 comunidades
     particiones = laplaciano_iterativo(A, niveles)
     assert(len(particiones) <= 2**niveles)
     assert(all(len(comunidad) > 0 for comunidad in particiones))
+
+    for i, comunidad in enumerate(particiones):
+        print(f"Comunidad {i}: {comunidad}")
 
 if __name__ == "__main__":
     np.random.seed(99)

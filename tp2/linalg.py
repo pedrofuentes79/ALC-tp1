@@ -190,8 +190,7 @@ def laplaciano_iterativo(A: np.ndarray, niveles: int) -> list:
         if len(comunidad1) == 0 or len(comunidad2) == 0:
             return [list(indices_nodos)]
 
-        return particionar(comunidad1, nivel_restante - 1) + \
-               particionar(comunidad2, nivel_restante - 1)
+        return particionar(comunidad1, nivel_restante - 1) + particionar(comunidad2, nivel_restante - 1)
 
     # Primera llamada, le pasamos los indices de todos los nodos del grafo.
     indices_iniciales = np.arange(A.shape[0])
