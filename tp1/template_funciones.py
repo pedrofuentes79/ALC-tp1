@@ -41,20 +41,31 @@ def calculaLU(A):
             U[j,:] = U[j,:] - coeficiente*U[i,:]
     return L,U
 
+
+def construye_matriz_K(A):
+    # Función que construye la matriz K de grado de los nodos
+    # A: Matriz de adyacencia
+    # Retorna la matriz K como un numpy.
+    
+    # Sumo las filas de A para obtener el grado de cada nodo
+    suma_filas_A = np.sum(A, axis=1)
+    
+    # Construyo la matriz diagonal K con los grados
+    K = np.diag(suma_filas_A)
+    
+    return K
+
+
 def calcula_matriz_C(A): 
     # Función para calcular la matriz de trancisiones C
     # A: Matriz de adyacencia
     # Retorna la matriz C
-    
-    # extraigo un arreglo con las sumas de cada fila de A
-    suma_filas_A = np.sum(A, axis=1)
 
-    # armo la matriz diagonal K con los valores de sumas_filas_A
-    K = np.diag(suma_filas_A)
-    Kinv = np.linalg.inv(K)
+    # Matriz de grado de los nodos 
+    K = construye_matriz_K(A)    
     
     # calculo C como A^T * K^-1
-    C = A.T @ Kinv
+    C = A.T @ np.linalg.inv(K)
     return C
 
     

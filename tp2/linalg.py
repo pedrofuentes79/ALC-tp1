@@ -108,9 +108,13 @@ def metpotI(M: np.ndarray, mu:float) -> tuple:
     """
     Método para obtener el autovalor más chico de M + mu*I y su correspondiente autovector. 
     """
+
+    # Invertimos la matriz M + mu*I 
     M2 = M + mu * np.eye(M.shape[0])
     L, U = calculaLU(M2)
     M2_inv = calcula_inversa_con_LU(L, U)    
+
+    # Aplicamos el método de la potencia a la matriz inversa
     autovalor, autovector = metpot(M2_inv)
     
     return 1/autovalor, autovector
