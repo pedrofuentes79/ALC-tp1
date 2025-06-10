@@ -6,7 +6,7 @@ from template_funciones import calculaLU
 from typing import List
 
 
-simetrizar_A = lambda A: (A + A.T) // 2 
+simetrizar_A = lambda A: np.ceil((A + A.T) / 2) 
 
 
 def calcula_L(A:np.ndarray) -> np.ndarray:
