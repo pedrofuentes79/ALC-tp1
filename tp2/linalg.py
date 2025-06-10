@@ -1,4 +1,5 @@
 import numpy as np
+import ipdb
 from scipy.linalg import solve_triangular
 from template_funciones import construye_matriz_K
 from template_funciones import calculaLU
@@ -68,34 +69,36 @@ def calcula_Q(R,v, n_aristas):
     return Q    
 
 
-def metpot(M:np.ndarray, DIST_CONVERGENCIA: float=1e-6, MAX_STEPS=10**6) -> tuple:
+def metpot(M:np.ndarray, DIST_CONVERGENCIA: float=1e-5, MAX_STEPS=10**5) -> tuple:
     """
     Método de la potencia para encontrar el autovalor de mayor módulo y su correspondiente autovector.
     Parámetros:
     - M: matriz cuadrada de la que se desea encontrar el autovalor y autovector.
     """
     n = M.shape[0]
-    x0 = np.random.rand(n) 
-    x0 /= np.linalg.norm(x0) 
+    anterior = np.random.rand(n) 
+    anterior /= np.linalg.norm(anterior) 
 
     for _ in range(MAX_STEPS):
-        Ax = M @ x0
-        x1 = Ax / np.linalg.norm(Ax)
-        if np.allclose(x0, x1, atol=DIST_CONVERGENCIA):
-            break
-        x0 = x1
+        Ax = M @ anterior
+        
+        actual = Ax / np.linalg.norm(Ax)
 
-    autovector = x0
-    autovalor = autovector.T @ M @ autovector  # <-- cociente de Rayleigh
+        if min(np.linalg.norm(anterior - actual), np.linalg.norm(anterior + actual)) < DIST_CONVERGENCIA:
+            break
+        
+        anterior = actual
+
+    autovector = actual
+    autovalor = autovector.T @ M @ autovector # <-- cociente de Rayleigh
 
     return autovalor, autovector    
 
 
-def deflaciona(M: np.ndarray) -> np.ndarray:
+def deflaciona(M: np.ndarray, autovalor: float, autovector: np.ndarray) -> np.ndarray:
     """ 
-    Recibe una matriz M, calcule su primer autovector y autovalor, y calcule la matríz M deflacionada.
+    Recibe una matriz M, su primer autovector y autovalor, y calcule la matríz M deflacionada.
     """
-    autovalor, autovector = metpot(M)
     M_deflacionada = M - autovalor * np.outer(autovector, autovector) / np.linalg.norm(autovector)**2
     
     return M_deflacionada
@@ -137,7 +140,8 @@ def metpotI2(M:np.ndarray, mu:float) -> tuple:
     M2 = M + mu * np.eye(n)
 
     M2_inv = calcula_inversa_con_LU(*calculaLU(M2))
-    M_inv_deflacionada = deflaciona(M2_inv)  
+    autovalor_inv, autovector_inv = metpot(M2_inv)
+    M_inv_deflacionada = deflaciona(M2_inv, autovalor_inv, autovector_inv)
     
     # Aplicamos el método de la potencia a la matriz deflacionada
     autovalor, autovector = metpot(M_inv_deflacionada)
@@ -196,8 +200,91 @@ def laplaciano_iterativo(A: np.ndarray, niveles: int) -> list:
     return particionar(indices_iniciales, niveles)
 
 
+def buscar_autovalor_positivo(M: np.ndarray) -> float:
+    """
+    Busca el autovalor positivo de M.
+    """
+    A = M.copy()
+
+    for _ in range(M.shape[0]):
+        if np.linalg.norm(A) < 1e-9: # Matriz casi nula
+            break
+        
+        autovalor, v1 = metpot(A)
+        
+        if autovalor > 0:
+            return autovalor, v1
+        
+        A = deflaciona(A, autovalor, v1)
+    
+    return -1, None
+
+
 def modularidad_iterativo(A: np.ndarray) -> List[List[int]]:
     """
     Calcula la modularidad de una red
     """
-    return None
+    # 1. Pre-cálculos iniciales sobre el grafo completo
+    R = calcula_R(A)
+    n_aristas = np.sum(A) / 2
+    
+    # 2. Estado inicial: una única comunidad con todos los nodos.
+    comunidades = [list(range(A.shape[0]))]
+
+    while True:
+        mejor_delta_Q = 0
+        mejor_split_info = None
+
+        # 3. Iterar sobre todas las comunidades actuales para encontrar el mejor split
+        for i, comunidad_actual in enumerate(comunidades):
+            if len(comunidad_actual) <= 1:
+                continue # las comunidades triviales no las consideramos
+
+            indices_actuales = np.array(comunidad_actual)
+            
+            # Busco el subgrafo actual
+            sub_R = R[np.ix_(indices_actuales, indices_actuales)]
+            
+            if sub_R.shape[0] < 2:
+                continue
+
+            # La heurística busca el autovalor MÁS POSITIVO. 
+            # Para ello, deflacionamos la matriz repetidamente hasta encontrar uno,
+            # o hasta que hayamos probado todos los autovalores posibles.
+            autovalor, v1 = buscar_autovalor_positivo(sub_R)
+
+            # Si encontramos un autovalor positivo, calculamos su delta_Q
+            if autovalor > 0:
+                # Usamos la sub_R original para el cálculo de Q, pero con el autovector v1 encontrado
+                delta_Q = calcula_Q(sub_R, v1, n_aristas)
+            else:
+                # Si no, significa que no hay divisiones que mejoren la modularidad.
+                delta_Q = -1
+
+            if delta_Q > mejor_delta_Q:
+                mejor_delta_Q = delta_Q
+                
+                indices_locales_c1 = np.where(v1 > 0)[0]
+                indices_locales_c2 = np.where(v1 <= 0)[0]
+                
+                comunidad1 = list(indices_actuales[indices_locales_c1])
+                comunidad2 = list(indices_actuales[indices_locales_c2])
+                
+                if comunidad1 and comunidad2:
+                    mejor_split_info = {
+                        "indice_comunidad_a_dividir": i,
+                        "nuevas_comunidades": [comunidad1, comunidad2]
+                    }
+        
+        # 4. Si el mejor split encontrado mejora la modularidad (delta_Q > 0), lo aplicamos.
+        if mejor_split_info and mejor_delta_Q > 0:
+            indice_a_dividir = mejor_split_info["indice_comunidad_a_dividir"]
+            
+            # Actualizamos la lista de comunidades
+            comunidades.pop(indice_a_dividir)
+            comunidades.extend(mejor_split_info["nuevas_comunidades"])
+        else:
+            # 5. Si no se encontró ningún split que mejore Q, cortamos.
+            break
+            
+    return comunidades
