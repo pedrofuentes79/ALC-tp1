@@ -2,9 +2,11 @@ import numpy as np
 import scipy
 
 def construye_adyacencia(D,m): 
-    # Función que construye la matriz de adyacencia del grafo de museos
-    # D matriz de distancias, m cantidad de links por nodo
-    # Retorna la matriz de adyacencia como un numpy.
+    """
+    Función que construye la matriz de adyacencia del grafo de museos
+    D matriz de distancias, m cantidad de links por nodo
+    Retorna la matriz de adyacencia como un numpy.    
+    """
     D = D.copy()
     l = [] # Lista para guardar las filas
     for fila in D: # recorriendo las filas, anexamos vectores lógicos
@@ -14,10 +16,9 @@ def construye_adyacencia(D,m):
     return(A)
 
 def calculaLU(A):
-    # matriz es una matriz de NxN
-    # Retorna la factorización LU a través de una lista con dos matrices L y U de NxN.
-    # Completar! Have fun
-    
+    """
+    Retorna la factorización LU a través de una lista con dos matrices L y U de NxN.
+    """    
     n = A.shape[0]
     # inicializo L como la identidad. 
     # Aca me voy a guardar los coeficientes para triangular la matriz U
@@ -43,10 +44,11 @@ def calculaLU(A):
 
 
 def construye_matriz_K(A):
-    # Función que construye la matriz K de grado de los nodos
-    # A: Matriz de adyacencia
-    # Retorna la matriz K como un numpy.
-    
+    """
+    Función que construye la matriz K de grado de los nodos
+    A: Matriz de adyacencia
+    Retorna la matriz K como un numpy.
+    """    
     # Sumo las filas de A para obtener el grado de cada nodo
     suma_filas_A = np.sum(A, axis=1)
     
@@ -57,10 +59,11 @@ def construye_matriz_K(A):
 
 
 def calcula_matriz_C(A): 
-    # Función para calcular la matriz de trancisiones C
-    # A: Matriz de adyacencia
-    # Retorna la matriz C
-
+    """
+    Función para calcular la matriz de trancisiones C
+    A: Matriz de adyacencia
+    Retorna la matriz C
+    """
     # Matriz de grado de los nodos 
     K = construye_matriz_K(A)    
     
@@ -70,10 +73,12 @@ def calcula_matriz_C(A):
 
     
 def calcula_pagerank(A,alfa):
-    # Función para calcular PageRank usando LU
-    # A: Matriz de adyacencia
-    # alpha: coeficientes de damping
-    # Retorna: Un vector p con los coeficientes de page rank de cada museo
+    """
+    Función para calcular PageRank usando LU
+    A: Matriz de adyacencia
+    alpha: coeficientes de damping
+    Retorna: Un vector p con los coeficientes de page rank de cada museo
+    """
     C = calcula_matriz_C(A)
     N = A.shape[0]
     M = (N/alfa) * (np.identity(N) - (1-alfa)*C)
@@ -110,12 +115,13 @@ def calcula_matriz_C_continua(D):
     return C
 
 def calcula_B(C, cantidad_de_visitas):
-    # Recibe la matriz C de transiciones, y calcula la matriz B que representa la relación entre el total de visitas y el número inicial de visitantes
-    # suponiendo que cada visitante realizó cantidad_de_visitas pasos
-    # C: Matriz de transiciones
-    # cantidad_de_visitas: Cantidad de pasos en la red dado por los visitantes. Indicado como r en el enunciado
-    # Retorna:Una matriz B que vincula la cantidad de visitas w con la cantidad de primeras visitas v
-
+    """
+    Recibe la matriz C de transiciones, y calcula la matriz B que representa la relación entre el total de visitas y el número inicial de visitantes
+    suponiendo que cada visitante realizó cantidad_de_visitas pasos
+    C: Matriz de transiciones
+    cantidad_de_visitas: Cantidad de pasos en la red dado por los visitantes. Indicado como r en el enunciado
+    Retorna:Una matriz B que vincula la cantidad de visitas w con la cantidad de primeras visitas v
+    """
     # inicializamos B como la matriz identidad para que la primera multiplicación sea C
     N = C.shape[0]
     B = np.identity(N)
