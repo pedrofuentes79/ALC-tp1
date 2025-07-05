@@ -247,7 +247,7 @@ def modularidad_iterativo(A: np.ndarray) -> List[List[int]]:
     comunidades = [list(range(A.shape[0]))]
 
     while True:
-        mejor_delta_Q = 0
+        mejor_aumento_de_modularidad = 0
         mejor_split_info = None
 
         # 3. Iterar sobre todas las comunidades actuales para encontrar el mejor split
@@ -260,6 +260,12 @@ def modularidad_iterativo(A: np.ndarray) -> List[List[int]]:
             # Busco el subgrafo actual
             sub_R = R[np.ix_(indices_actuales, indices_actuales)]
 
+            # Estoy en la comunidad i. Cual es la modularidad actual? 
+            # Sin hacer ningun split, entonces tomo vector de unos.
+            vector_unos = np.ones(indices_actuales.shape[0])
+            modularidad_actual = calcula_Q(sub_R, vector_unos, n_aristas)
+
+            # Si la comunidad es trivial, no la consideramos
             if sub_R.shape[0] < 2:
                 continue
 
@@ -274,10 +280,13 @@ def modularidad_iterativo(A: np.ndarray) -> List[List[int]]:
                 delta_Q = calcula_Q(sub_R, v1, n_aristas)
             else:
                 # Si no, significa que no hay divisiones que mejoren la modularidad.
-                delta_Q = -1
+                # pongo -inf para que el aumento de modularidad no se considere.
+                delta_Q = -np.inf
 
-            if delta_Q > mejor_delta_Q:
-                mejor_delta_Q = delta_Q
+            # Si hacer el split mejora la modularidad respecto de no hacerlo, lo guardamos.
+            aumento_de_modularidad = delta_Q - modularidad_actual
+            if aumento_de_modularidad > mejor_aumento_de_modularidad:
+                mejor_aumento_de_modularidad = aumento_de_modularidad
 
                 indices_locales_c1 = np.where(v1 > 0)[0]
                 indices_locales_c2 = np.where(v1 <= 0)[0]
@@ -292,7 +301,7 @@ def modularidad_iterativo(A: np.ndarray) -> List[List[int]]:
                     }
 
         # 4. Si el mejor split encontrado mejora la modularidad (delta_Q > 0), lo aplicamos.
-        if mejor_split_info and mejor_delta_Q > 0:
+        if mejor_split_info and mejor_aumento_de_modularidad > 0:
             indice_a_dividir = mejor_split_info["indice_comunidad_a_dividir"]
 
             # Actualizamos la lista de comunidades
