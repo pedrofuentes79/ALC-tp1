@@ -25,7 +25,7 @@ def calcula_P(A: np.ndarray) -> np.ndarray:
     Pij = k_i * k_j /2E
     """
     k = np.sum(A, axis=1)  # <-- grados
-    suma_doble_E = np.sum(k) / 2  # <- constante 2E
+    suma_doble_E = np.sum(k)  # <- constante 2E
     P = np.outer(k, k) / suma_doble_E
     return P
 
