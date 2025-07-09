@@ -237,7 +237,20 @@ def buscar_autovalor_positivo(M: np.ndarray) -> float:
 
 def modularidad_iterativo(A: np.ndarray) -> List[List[int]]:
     """
-    Calcula la modularidad de una red
+    Divide la red en comunidades usando la heurística de modularidad.
+    Empieza con una única comunidad con todos los nodos y va dividiendo en comunidades.
+    La heuristica de division es: calcular la modularidad de dividir la comunidad actual en dos. 
+    Digamos que la comunidad actual es Q1. Dividimos en Q1a y Q1b.
+    Para efectivamente guardarnos este split como el mejor dentro de las comunidades existentes, 
+    tenemos que chequear que la modularidad de Q1a + la de Q1b sea mayor que la de Q1.
+    Es decir mod(Q1a) + mod(Q1b) > mod(Q1). Si es asi, nos guardamos el split.
+    Ojo, puede suceder que haya un Q2 cuyos Q2a y Q2b sean un mejor split, 
+    es decir, que su aporte a la mejora de modularidad sea mayor que el de Q1.
+    Formalmente, esto seria que mod(Q2a) + mod(Q2b) - mod(Q2) > mod(Q1a) + mod(Q1b) - mod(Q1).
+    Si esto es asi, entonces Q2 es el mejor split y lo aplicamos.
+    
+    Repetimos el proceso hasta que no haya ningún split que mejore la modularidad, ya que puede suceder que
+    mod(Qa) + mod(Qb) - mod(Q) < 0, (para todo Q comunidad dentro de las comunidades existentes).
     """
     # 1. Pre-cálculos iniciales sobre el grafo completo
     R = calcula_R(A)
