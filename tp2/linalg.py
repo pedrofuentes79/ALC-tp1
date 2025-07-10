@@ -1,5 +1,4 @@
 import numpy as np
-import ipdb
 from scipy.linalg import solve_triangular
 from template_funciones import construye_matriz_K
 from template_funciones import calculaLU
