@@ -156,7 +156,7 @@ def metpotI2(M: np.ndarray, mu: float) -> tuple:
     # Aplicamos el método de la potencia a la matriz deflacionada
     autovalor, autovector = metpot(M_inv_deflacionada)
 
-    return 1 / autovalor, autovector
+    return (1 / autovalor) - mu, autovector
 
 
 def laplaciano_iterativo(A: np.ndarray, niveles: int) -> list:
