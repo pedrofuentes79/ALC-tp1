@@ -1,2 +1,0 @@
-[4] Formalismo en el 4 (demostracion?)
-[6] El error  que te dan es el || w - \hat{w} || o el relativo || w - \hat{w} || / || w ||  

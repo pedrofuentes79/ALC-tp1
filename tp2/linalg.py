@@ -1,5 +1,4 @@
 import numpy as np
-import ipdb
 from scipy.linalg import solve_triangular
 from template_funciones import construye_matriz_K
 from template_funciones import calculaLU
@@ -25,7 +24,7 @@ def calcula_P(A: np.ndarray) -> np.ndarray:
     Pij = k_i * k_j /2E
     """
     k = np.sum(A, axis=1)  # <-- grados
-    suma_doble_E = np.sum(k) / 2  # <- constante 2E
+    suma_doble_E = np.sum(k)  # <- constante 2E
     P = np.outer(k, k) / suma_doble_E
     return P
 
@@ -156,7 +155,7 @@ def metpotI2(M: np.ndarray, mu: float) -> tuple:
     # Aplicamos el método de la potencia a la matriz deflacionada
     autovalor, autovector = metpot(M_inv_deflacionada)
 
-    return 1 / autovalor, autovector
+    return (1 / autovalor) - mu, autovector
 
 
 def laplaciano_iterativo(A: np.ndarray, niveles: int) -> list:
@@ -237,7 +236,20 @@ def buscar_autovalor_positivo(M: np.ndarray) -> float:
 
 def modularidad_iterativo(A: np.ndarray) -> List[List[int]]:
     """
-    Calcula la modularidad de una red
+    Divide la red en comunidades usando la heurística de modularidad.
+    Empieza con una única comunidad con todos los nodos y va dividiendo en comunidades.
+    La heuristica de division es: calcular la modularidad de dividir la comunidad actual en dos. 
+    Digamos que la comunidad actual es Q1. Dividimos en Q1a y Q1b.
+    Para efectivamente guardarnos este split como el mejor dentro de las comunidades existentes, 
+    tenemos que chequear que la modularidad de Q1a + la de Q1b sea mayor que la de Q1.
+    Es decir mod(Q1a) + mod(Q1b) > mod(Q1). Si es asi, nos guardamos el split.
+    Ojo, puede suceder que haya un Q2 cuyos Q2a y Q2b sean un mejor split, 
+    es decir, que su aporte a la mejora de modularidad sea mayor que el de Q1.
+    Formalmente, esto seria que mod(Q2a) + mod(Q2b) - mod(Q2) > mod(Q1a) + mod(Q1b) - mod(Q1).
+    Si esto es asi, entonces Q2 es el mejor split y lo aplicamos.
+    
+    Repetimos el proceso hasta que no haya ningún split que mejore la modularidad, ya que puede suceder que
+    mod(Qa) + mod(Qb) - mod(Q) < 0, (para todo Q comunidad dentro de las comunidades existentes).
     """
     # 1. Pre-cálculos iniciales sobre el grafo completo
     R = calcula_R(A)
@@ -247,7 +259,7 @@ def modularidad_iterativo(A: np.ndarray) -> List[List[int]]:
     comunidades = [list(range(A.shape[0]))]
 
     while True:
-        mejor_delta_Q = 0
+        mejor_aumento_de_modularidad = 0
         mejor_split_info = None
 
         # 3. Iterar sobre todas las comunidades actuales para encontrar el mejor split
@@ -260,6 +272,12 @@ def modularidad_iterativo(A: np.ndarray) -> List[List[int]]:
             # Busco el subgrafo actual
             sub_R = R[np.ix_(indices_actuales, indices_actuales)]
 
+            # Estoy en la comunidad i. Cual es la modularidad actual? 
+            # Sin hacer ningun split, entonces tomo vector de unos.
+            vector_unos = np.ones(indices_actuales.shape[0])
+            modularidad_actual = calcula_Q(sub_R, vector_unos, n_aristas)
+
+            # Si la comunidad es trivial, no la consideramos
             if sub_R.shape[0] < 2:
                 continue
 
@@ -274,10 +292,13 @@ def modularidad_iterativo(A: np.ndarray) -> List[List[int]]:
                 delta_Q = calcula_Q(sub_R, v1, n_aristas)
             else:
                 # Si no, significa que no hay divisiones que mejoren la modularidad.
-                delta_Q = -1
+                # pongo -inf para que el aumento de modularidad no se considere.
+                delta_Q = -np.inf
 
-            if delta_Q > mejor_delta_Q:
-                mejor_delta_Q = delta_Q
+            # Si hacer el split mejora la modularidad respecto de no hacerlo, lo guardamos.
+            aumento_de_modularidad = delta_Q - modularidad_actual
+            if aumento_de_modularidad > mejor_aumento_de_modularidad:
+                mejor_aumento_de_modularidad = aumento_de_modularidad
 
                 indices_locales_c1 = np.where(v1 > 0)[0]
                 indices_locales_c2 = np.where(v1 <= 0)[0]
@@ -292,7 +313,7 @@ def modularidad_iterativo(A: np.ndarray) -> List[List[int]]:
                     }
 
         # 4. Si el mejor split encontrado mejora la modularidad (delta_Q > 0), lo aplicamos.
-        if mejor_split_info and mejor_delta_Q > 0:
+        if mejor_split_info and mejor_aumento_de_modularidad > 0:
             indice_a_dividir = mejor_split_info["indice_comunidad_a_dividir"]
 
             # Actualizamos la lista de comunidades

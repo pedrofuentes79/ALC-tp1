@@ -64,7 +64,7 @@ $$
 $$
 
 $$
-\sum_{j=1}^{n}{A_{kj} = \lambda_2 + k_k \cdot \sum_{j=1}^{n}{k_j}{2E}} 
+\sum_{j=1}^{n}{A_{kj} = \lambda_2 + k_k \cdot \sum_{j=1}^{n}\frac{k_j}{2E}} 
 $$
 
 Recordamos que $k_k = \sum_{h=1}^{n}{A_{kh}}$. Luego:
